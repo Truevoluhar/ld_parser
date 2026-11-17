@@ -7,5 +7,5 @@ RUN pip install --no-cache-dir -r requirements.txt && useradd --uid 10003 --crea
 COPY app.py agent.py models.py imaging.py ./
 COPY static ./static
 USER appuser
-EXPOSE 8080
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080", "--no-access-log"]
+EXPOSE 8086
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8086", "--no-access-log"]

@@ -4,14 +4,15 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
+    network_mode: host
     ports:
-      - "8086:8080"
+      - "8086:8086"
     volumes:
       - parser_data:/data
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=3)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8086/health', timeout=3)"]
       interval: 20s
       timeout: 20s
       start_period: 45s
