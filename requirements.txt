@@ -4,3 +4,6 @@ httpx==0.28.1
 python-multipart==0.0.20
 pillow==11.3.0
 pypdfium2==4.30.0
+
+# Bundled internal ARM settings client. Run pip from the project root.
+./vendor/armutils

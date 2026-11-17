@@ -1,3 +1,7 @@
+from ArmUtils.environment import load_environment
+
+load_environment("ld_parser")
+
 from contextlib import asynccontextmanager
 from datetime import datetime
 from hashlib import sha256

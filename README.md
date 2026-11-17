@@ -78,3 +78,41 @@ docker compose run --rm -v "$PWD/tests:/tests:ro" -v "$PWD/example_docs:/example
 Testi preverijo parjenje vseh petih vzorcev, vrstni red, podvojene/manjkajoče strani, večstranske PDF-je, shemo, null/0/false, neposredni JSON, ločitev uporabnikov in izgubljeno potrditev brez ponovnega zagona. API testi uporabljajo simuliranega agenta.
 
 `tests/expected_examples.json` vsebuje ročno pregledane pričakovane vrednosti ključnih polj vzorcev. `tests/live_examples.py` je izrecen živi preizkus, ki kliče model prek agenta; guid bere iz stdin in ga ne izpisuje. Namenjen je okolju z montiranima `/tests` in `/examples` ter dosegljivim LD parserjem na gostiteljevem portu 8086.
+
+## Nastavitve iz ARM
+
+Storitev ob zagonu najprej uporabi priloženo knjižnico ArmUtils. V `.env` nastavite
+`ARM_APP_NAME` na pravo ime aplikacije v ARM (privzeto `ld_parser`) in
+`ARM_SETTINGS_URL` na URL vašega okolja. Klic pošlje `sfObjekt=ARM_APP_NAME`;
+`SF_NASTAVITEV` je ime obstoječe okoljske nastavitve, `SF_NASTAVITEV_VREDNOST` pa njena vrednost.
+Na primer, ARM ključ `AGENT_API_URL` nadomesti istoimensko vrednost iz okolja.
+V v6 veljajo enaka imena tudi za LLM tokene, podatkovno bazo, prijavo in druge aplikacijske nastavitve.
+
+ARM vrednosti imajo prednost pred okoljem. Ključi, ki jih ARM ne vrne, obdržijo
+okoljsko vrednost oziroma obstoječo privzeto vrednost aplikacije. Izrecno prazna
+ARM vrednost ostane prazna. Če klic ne uspe, vrne prazen seznam ali neveljaven
+seznam nastavitev, se uporabi okolje brez delnega uveljavljanja odgovora ARM.
+Vsebinsko neveljavne aplikacijske nastavitve (npr. neveljavna meja tokenov)
+še vedno zavrne obstoječa validacija; povezave z ARM to ne prikrijejo.
+
+Povezava z ARM se nastavi izključno prek okolja: `ARM_APP_NAME`,
+`ARM_SETTINGS_URL`, `ARM_TLS_VERIFY`, `ARM_CA_FILE`, `ARM_CA_PATH`,
+`ARM_CLIENT_CERT_FILE`, `ARM_CLIENT_KEY_FILE`, `ARM_CLIENT_KEY_PASSWORD`.
+Privzeto je preverjanje TLS vključeno. Za interno CA nastavite `ARM_CA_FILE`,
+za mTLS pa še datoteki certifikata in zasebnega ključa; datoteke morajo biti
+nameščene v vsebniku in poti nastavljene glede nanj. Bootstrap nastavitve morajo
+biti dostopne pred ARM klicem in jih ni mogoče pridobiti iz ARM za isti prvi klic.
+Privzeti URL knjižnice kaže na testni ARM; za produkcijo ga izrecno spremenite.
+
+ARM se prebere enkrat na proces (rok HTTP klica v knjižnici je 10 sekund).
+Za ponovno pridobitev, tudi po izpadu ARM, znova zaženite proces. Streamlit ob
+vsaki interakciji ne kliče ARM ponovno. Pri spremembi `.env` ponovno ustvarite
+vsebnik; `.env` pri neposrednem Python zagonu sami naložite v okolje.
+Nastavitve Dockerja/Podmana (objava portov, priklopi datotek, build, uporabnik
+vsebnika) ostajajo stvar konfiguracije namestitve in jih aplikacijski ARM ne spreminja.
+
+Knjižnica in dodatek za nalaganje okolja sta vključena v `vendor/armutils`, da je
+projekt samostojen. Odvisnosti namestite iz korena tega projekta z
+`pip install -r requirements.txt`;
+Dockerfile knjižnico namesti samodejno. Ob posodobitvi izvornega `armutils-main`
+osvežite tudi vključene kopije. Po teh spremembah je potreben nov build slike.

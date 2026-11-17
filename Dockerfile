@@ -2,6 +2,7 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 DATA_DIR=/data
 WORKDIR /app
 COPY requirements.txt .
+COPY vendor/armutils /app/vendor/armutils
 RUN pip install --no-cache-dir -r requirements.txt && useradd --uid 10003 --create-home appuser && mkdir /data && chown appuser:appuser /data
 COPY app.py agent.py models.py imaging.py ./
 COPY static ./static
